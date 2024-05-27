@@ -20,6 +20,7 @@ def get_trial_data(trial_id):
         if "NCT" in id:
             trial_id = id
             break
+    # Only clinicaltrials.gov supported at the moment
     if "NCT" in id:
         url = f"https://clinicaltrials.gov/api/v2/studies/{trial_id}"
         try:
@@ -30,11 +31,8 @@ def get_trial_data(trial_id):
         with open(f"trials/trial_{trial_id}.json", "w") as f:
             f.write(json.dumps(response, indent=4))
         return response
-    # check the other ID formats to get the data
     return None
 
-
-# load XLSX file and get the IDs from the first column and call get_trial_data for each ID
 
 def get_trials_data_from_xlsx(file_path, limit=False):
     try:
@@ -87,7 +85,6 @@ def extract_pros(trial_id, unique_id):
     title = data["protocolSection"]["identificationModule"]["briefTitle"]
     results = []
     for i, outcome in enumerate(outcomes):
-        # print(outcome)
         answer = json.loads(ask_ai(
             f"In a clinical trial, a patient-reported outcome (PRO) is any information about a patient's health condition that comes partially from the patient themselves, i.e. a subjective report. Below, you receive a JSON string of an Outcome Measure in the clinical trial '{title}'. Please respond if this outcome is PRO or not (partially PRO is still considered a PRO, such as ARC20), specify the instrument used if any and give the reason for your assessment as a JSON string with keys 'is_pro', 'reason' and 'instrument'.\n{outcome}",
             system_role="You are an expert clinical analyst specialized in assessing integrity of clinical trial data",
@@ -331,10 +328,12 @@ def convert_results_to_csv(input_file, output_file):
 
 start_run()
 try:
+    # EDIT HERE THE DATA FILE NAMES
     get_trials_data_from_xlsx("ASPIRE_2012_OSKARI.xlsx")
     compile_results_data("ASPIRE_2012_OSKARI.xlsx")
     match_results()
     convert_results_to_csv("pro_results.json", "pro_results.csv")
+
 except Exception as e:
     print("An exception occurred:", str(e))
     traceback.print_exc()
