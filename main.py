@@ -12,7 +12,15 @@ matches_processed = 0
 
 def get_trial_data(trial_id):
     try:
-        trial_ids = trial_id.split(",")
+        # Here could be ; and remember to strip the spaces
+        trial_id = trial_id.replace(";", ",")
+        trial_id = trial_id.replace("_x000D_", ",")
+        trial_id = trial_id.replace(" ", ",")
+        trial_id = trial_id.replace("\n", ",")
+        trial_id = trial_id.replace("\t", ",")
+        trial_id = trial_id.replace("&", ",")
+        trial_ids = [e for e in trial_id.split(",") if e]
+        # print("Trial ids:", trial_ids)
     except:
         return None
     
@@ -74,6 +82,8 @@ def extract_pros(trial_id, unique_id):
     
     
     outcomes = []
+    if "protocolSection" not in data or "outcomesModule" not in data["protocolSection"]:
+        return None
     for d in data["protocolSection"]["outcomesModule"]["primaryOutcomes"]:
         d["is_primary"] = True
         outcomes.append(d)
@@ -280,37 +290,37 @@ def convert_results_to_csv(input_file, output_file):
         comments = []
         if len(data["matching"]["extra_outcomes_in_registry_wrt_ethical"]):
             row.append(True)
-            comments.append("Registry has additional PRO outcomes that are not found in the ethical submission")
+            comments.append(f"Registry has {len(data['matching']['extra_outcomes_in_registry_wrt_ethical'])} additional PRO outcomes that are not found in the ethical submission")
         else:
             row.append(False)
 
         if len(data["matching"]["missing_outcomes_in_registry_wrt_ethical"]):
             row.append(True)
-            comments.append("Registry is missing PRO outcomes that are present in the ethical submission")
+            comments.append(f"Registry is {len(data['matching']['missing_outcomes_in_registry_wrt_ethical'])} missing PRO outcomes that are present in the ethical submission")
         else:
             row.append(False)
 
         if len(data["matching"]["modified_outcomes_in_registry_wrt_ethical"]):
             row.append(True)
-            comments.append("Registry has outcomes matching the ethical submission but they might have been modified")
+            comments.append(f"Registry has {len(data['matching']['modified_outcomes_in_registry_wrt_ethical'])} outcomes matching the ethical submission but they might have been modified")
         else:
             row.append(False)
 
         if len(data["matching"]["extra_outcomes_in_registry_wrt_publication"]):
             row.append(True)
-            comments.append("Registry has additional PRO outcomes that are not found in the publication")
+            comments.append(f"Registry has {len(data['matching']['extra_outcomes_in_registry_wrt_publication'])} additional PRO outcomes that are not found in the publication")
         else:
             row.append(False)
 
         if len(data["matching"]["missing_outcomes_in_registry_wrt_publication"]):
             row.append(True)
-            comments.append("Registry is missing PRO outcomes that are present in the publication")
+            comments.append(f"Registry is {len(data['matching']['missing_outcomes_in_registry_wrt_publication'])} missing PRO outcomes that are present in the publication")
         else:
             row.append(False)
 
         if len(data["matching"]["modified_outcomes_in_registry_wrt_publication"]):
             row.append(True)
-            comments.append("Registry has outcomes matching the publication but they might have been modified")
+            comments.append(f"Registry has {len(data['matching']['modified_outcomes_in_registry_wrt_publication'])} outcomes matching the publication but they might have been modified")
         else:
             row.append(False)
 
@@ -329,10 +339,10 @@ def convert_results_to_csv(input_file, output_file):
 start_run()
 try:
     # EDIT HERE THE DATA FILE NAMES
-    get_trials_data_from_xlsx("ASPIRE_2012_OSKARI.xlsx")
-    compile_results_data("ASPIRE_2012_OSKARI.xlsx")
+    get_trials_data_from_xlsx("ASPIRE_2016_OSKARI.xlsx")
+    compile_results_data("ASPIRE_2016_OSKARI.xlsx")
     match_results()
-    convert_results_to_csv("pro_results.json", "pro_results.csv")
+    convert_results_to_csv("pro_results.json", "pro_results_2016.csv")
 
 except Exception as e:
     print("An exception occurred:", str(e))
